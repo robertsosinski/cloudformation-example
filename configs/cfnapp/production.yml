@@ -1,0 +1,38 @@
+env:
+  name: cfnapp
+  tier: production
+
+vpc:
+  cidr: 10.0.0.0/16
+
+  subnet:
+    public:
+      - cidr: 10.0.0.0/20
+        zone: a
+      - cidr: 10.0.16.0/20
+        zone: b
+      - cidr: 10.0.32.0/20
+        zone: c
+    private:
+      - cidr: 10.0.128.0/20
+        zone: a
+      - cidr: 10.0.144.0/20
+        zone: b
+      - cidr: 10.0.160.0/20
+        zone: c
+
+rds:
+  multi_az: true
+  db_instance_class: db.t2.small
+  storage_type: gp2
+  allocated_storage: 10
+  storage_encrypted: true
+  monitoring_interval: 5
+  # password: 286755fad04869ca523320acce0dc6a4
+
+ec2:
+  jump:
+    ami: ami-8eeac9eb
+    instance_type: t2.micro
+    key_name: ec2-us-east-2
+    monitoring: true

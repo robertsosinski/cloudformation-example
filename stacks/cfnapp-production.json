@@ -1,0 +1,694 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "RDSPostgresPassword": {
+      "Type": "String",
+      "Description": "MasterPassword for RDS Postgres DB Instance.",
+      "ConstraintDescription": "Must be 32 characters.",
+      "NoEcho": true,
+      "MaxLength": 32,
+      "MinLength": 32
+    }
+  },
+  "Resources": {
+    "VPC": {
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsSupport": true,
+        "EnableDnsHostnames": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-vpc"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::VPC"
+    },
+    "InternetGateway": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-igw"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::InternetGateway"
+    },
+    "InternetGatewayAttachment": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        }
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment"
+    },
+    "PublicRouteTable": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-public-routetable"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
+    "PublicRouteTableInternetGatewayRoute": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        }
+      },
+      "Type": "AWS::EC2::Route"
+    },
+    "PublicSubnet1": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.0.0/20",
+        "AvailabilityZone": {
+          "Fn::Sub": "${AWS::Region}a"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-public-subnet-1"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PublicSubnet1PublicRouteTableAssociation": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet1"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "NatGateway1EIP": {
+      "DependsOn": "VPC",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "Type": "AWS::EC2::EIP"
+    },
+    "NatGateway1": {
+      "DependsOn": "InternetGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "NatGateway1EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet1"
+        }
+      },
+      "Type": "AWS::EC2::NatGateway"
+    },
+    "PublicSubnet2": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.16.0/20",
+        "AvailabilityZone": {
+          "Fn::Sub": "${AWS::Region}b"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-public-subnet-2"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PublicSubnet2PublicRouteTableAssociation": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet2"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "NatGateway2EIP": {
+      "DependsOn": "VPC",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "Type": "AWS::EC2::EIP"
+    },
+    "NatGateway2": {
+      "DependsOn": "InternetGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "NatGateway2EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet2"
+        }
+      },
+      "Type": "AWS::EC2::NatGateway"
+    },
+    "PublicSubnet3": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.32.0/20",
+        "AvailabilityZone": {
+          "Fn::Sub": "${AWS::Region}c"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-public-subnet-3"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PublicSubnet3PublicRouteTableAssociation": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet3"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "NatGateway3EIP": {
+      "DependsOn": "VPC",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "Type": "AWS::EC2::EIP"
+    },
+    "NatGateway3": {
+      "DependsOn": "InternetGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "NatGateway3EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet3"
+        }
+      },
+      "Type": "AWS::EC2::NatGateway"
+    },
+    "PrivateSubnet1": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.128.0/20",
+        "AvailabilityZone": {
+          "Fn::Sub": "${AWS::Region}a"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-private-subnet-1"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PrivateRouteTable1": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-private-routetable-1"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
+    "PrivateRouteTable1NatGateway1Route": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway1"
+        },
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable1"
+        }
+      },
+      "Type": "AWS::EC2::Route"
+    },
+    "PrivateSubnet1PrivateRouteTable1Association": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable1"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet1"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "PrivateSubnet2": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.144.0/20",
+        "AvailabilityZone": {
+          "Fn::Sub": "${AWS::Region}b"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-private-subnet-2"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PrivateRouteTable2": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-private-routetable-2"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
+    "PrivateRouteTable2NatGateway2Route": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway2"
+        },
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable2"
+        }
+      },
+      "Type": "AWS::EC2::Route"
+    },
+    "PrivateSubnet2PrivateRouteTable2Association": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable2"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet2"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "PrivateSubnet3": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.160.0/20",
+        "AvailabilityZone": {
+          "Fn::Sub": "${AWS::Region}c"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-private-subnet-3"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PrivateRouteTable3": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-private-routetable-3"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
+    "PrivateRouteTable3NatGateway3Route": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway3"
+        },
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable3"
+        }
+      },
+      "Type": "AWS::EC2::Route"
+    },
+    "PrivateSubnet3PrivateRouteTable3Association": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable3"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet3"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "RDSPostgresSubnetGroup": {
+      "Properties": {
+        "SubnetIds": [
+          {
+            "Ref": "PrivateSubnet1"
+          },
+          {
+            "Ref": "PrivateSubnet2"
+          },
+          {
+            "Ref": "PrivateSubnet3"
+          }
+        ],
+        "DBSubnetGroupDescription": "RDS Postgres Subnet Group for cfnapp-production"
+      },
+      "Type": "AWS::RDS::DBSubnetGroup"
+    },
+    "RDSPostgresSecurityGroup": {
+      "Properties": {
+        "GroupName": "cfnapp-production-rds-postgres-security-group",
+        "GroupDescription": "RDS Postgres Security Group for cfnapp-production",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.0.0/16",
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "RDSPostgresDBInstance": {
+      "DeletionPolicy": "Snapshot",
+      "Properties": {
+        "StorageType": "gp2",
+        "StorageEncrypted": true,
+        "AllocatedStorage": 10,
+        "DBInstanceClass": "db.t2.small",
+        "DBInstanceIdentifier": "cfnapp-production-rds-postgres-dbinstance",
+        "VPCSecurityGroups": [
+          {
+            "Ref": "RDSPostgresSecurityGroup"
+          }
+        ],
+        "DBSubnetGroupName": {
+          "Ref": "RDSPostgresSubnetGroup"
+        },
+        "MultiAZ": true,
+        "Engine": "postgres",
+        "DBName": "postgres",
+        "MasterUsername": "postgres",
+        "MasterUserPassword": {
+          "Ref": "RDSPostgresPassword"
+        },
+        "MonitoringInterval": 5,
+        "MonitoringRoleArn": {
+          "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/RDSEnhancedMonitoring"
+        }
+      },
+      "Type": "AWS::RDS::DBInstance"
+    },
+    "JumpHostSecurityGroup": {
+      "Properties": {
+        "GroupName": "cfnapp-production-jump-host-security-group",
+        "GroupDescription": "Jump Host Security Group for cfnapp-production",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "JumpHostEIP": {
+      "DependsOn": "VPC",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "Type": "AWS::EC2::EIP"
+    },
+    "JumpHostInstance": {
+      "DependsOn": "PublicSubnet1",
+      "Properties": {
+        "Tenancy": "default",
+        "ImageId": "ami-8eeac9eb",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "InstanceType": "t2.micro",
+        "KeyName": "ec2-us-east-2",
+        "Monitoring": true,
+        "SecurityGroupIds": [
+          {
+            "Ref": "JumpHostSecurityGroup"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": "touch done.txt"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet1"
+        },
+        "DisableApiTermination": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "VirtualName": "cfnapp-production-jump-host-volume",
+            "Ebs": {
+              "VolumeSize": 8,
+              "DeleteOnTermination": false
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "cfnapp-production-jump-host-instance"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Instance"
+    },
+    "JumpHostInstanceEIPAssociation": {
+      "Properties": {
+        "InstanceId": {
+          "Ref": "JumpHostInstance"
+        },
+        "EIP": {
+          "Ref": "JumpHostEIP"
+        }
+      },
+      "Type": "AWS::EC2::EIPAssociation"
+    },
+    "JumpHostInstanceAutoRecoveryAlarm": {
+      "Properties": {
+        "AlarmName": "cfnapp-production-jump-host-instance-auto-recovery-alarm",
+        "AlarmDescription": "Enables Auto Recovery for Jump Host Instance for cfnapp-production",
+        "Namespace": "AWS/EC2",
+        "MetricName": "StatusCheckFailed_System",
+        "Period": 60,
+        "EvaluationPeriods": 5,
+        "Statistic": "Minimum",
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "AlarmActions": [
+          {
+            "Fn::Sub": "arn:aws:automate:${AWS::Region}:ec2:recover"
+          }
+        ],
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "JumpHostInstance"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::CloudWatch::Alarm"
+    },
+    "JumpHostInstanceAutoRebootAlarm": {
+      "Properties": {
+        "AlarmName": "cfnapp-production-jump-host-instance-auto-reboot-alarm",
+        "AlarmDescription": "Enables Auto Reboot for Jump Host Instance for cfnapp-production",
+        "Namespace": "AWS/EC2",
+        "MetricName": "StatusCheckFailed_Instance",
+        "Period": 60,
+        "EvaluationPeriods": 5,
+        "Statistic": "Minimum",
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "AlarmActions": [
+          {
+            "Fn::Sub": "arn:aws:swf:${AWS::Region}:${AWS::AccountId}:action/actions/AWS_EC2.InstanceId.Reboot/1.0"
+          }
+        ],
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "JumpHostInstance"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::CloudWatch::Alarm"
+    },
+    "JumpHostDNSRecordSet": {
+      "Properties": {
+        "HostedZoneId": "Z1OOS4ZGLHZOX1",
+        "Name": "jump.cfnapp-production.sosinr.link.",
+        "Type": "A",
+        "TTL": 600,
+        "ResourceRecords": [
+          {
+            "Ref": "JumpHostEIP"
+          }
+        ]
+      },
+      "Type": "AWS::Route53::RecordSet"
+    },
+    "ELBSecurityGroup": {
+      "Properties": {
+        "GroupName": "cfnapp-production-elb-security-group",
+        "GroupDescription": "ELB Security Group for cfnapp-production",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp",
+            "FromPort": 80,
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "ApplicationSecurityGroup": {
+      "Properties": {
+        "GroupName": "cfnapp-production-application-security-group",
+        "GroupDescription": "Application Security Group for cfnapp-production",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp",
+            "FromPort": 80,
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "JumpHostSecurityGroup"
+            },
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    }
+  },
+  "Outputs": {
+    "RDSPostgresEndpointAddress": {
+      "Description": "RDS Postgres Endpoint Address for cfnapp-production",
+      "Value": {
+        "Fn::GetAtt": [
+          "RDSPostgresDBInstance",
+          "Endpoint.Address"
+        ]
+      }
+    },
+    "RDSPostgresEndpointPort": {
+      "Description": "RDS Postgres Endpoint Port for cfnapp-production",
+      "Value": {
+        "Fn::GetAtt": [
+          "RDSPostgresDBInstance",
+          "Endpoint.Port"
+        ]
+      }
+    },
+    "JumpHostKeyName": {
+      "Description": "Jump Host Key Name for cfnapp-production",
+      "Value": "ec2-us-east-2"
+    },
+    "JumpHostEIP": {
+      "Description": "Jump Host IP Address for cfnapp-production",
+      "Value": {
+        "Ref": "JumpHostEIP"
+      }
+    },
+    "JumpHostDNSAddress": {
+      "Description": "Jump Host DNS Address for cfnapp-production",
+      "Value": "jump.cfnapp-production.sosinr.link"
+    }
+  }
+}

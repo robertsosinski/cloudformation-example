@@ -1,0 +1,93 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "EC2ActionsAccessRole": {
+      "Properties": {
+        "RoleName": "EC2ActionsAccess",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/CloudWatchActionsEC2Access"
+        ],
+        "Path": "/actions/",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "sts:AssumeRole",
+              "Principal": {
+                "Service": "swf.amazonaws.com"
+              }
+            }
+          ]
+        }
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "RDSEnhancedMonitoringRole": {
+      "Properties": {
+        "RoleName": "RDSEnhancedMonitoring",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+        ],
+        "Path": "/",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "sts:AssumeRole",
+              "Principal": {
+                "Service": "monitoring.rds.amazonaws.com"
+              }
+            }
+          ]
+        }
+      },
+      "Type": "AWS::IAM::Role"
+    }
+  },
+  "Outputs": {
+    "EC2ActionsAccessRoleName": {
+      "Description": "IAM Role Name for EC2ActionsAccess Cloud Watch Policy",
+      "Value": {
+        "Ref": "EC2ActionsAccessRole"
+      },
+      "Export": {
+        "Name": "account-ec2-actions-access-role-name"
+      }
+    },
+    "EC2ActionsAccessRoleArn": {
+      "Description": "IAM Role Arn for EC2ActionsAccess Cloud Watch Policy",
+      "Value": {
+        "Fn::GetAtt": [
+          "EC2ActionsAccessRole",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": "account-ec2-actions-access-role-arn"
+      }
+    },
+    "RDSEnhancedMonitoringRoleName": {
+      "Description": "IAM Role Name for EC2ActionsAccess Cloud Watch Policy",
+      "Value": {
+        "Ref": "RDSEnhancedMonitoringRole"
+      },
+      "Export": {
+        "Name": "account-rds-enhanced-monitoring-role-name"
+      }
+    },
+    "RDSEnhancedMonitoringRoleArn": {
+      "Description": "IAM Role Arn for EC2ActionsAccess Cloud Watch Policy",
+      "Value": {
+        "Fn::GetAtt": [
+          "RDSEnhancedMonitoringRole",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": "account-rds-enhanced-monitoring-role-arn"
+      }
+    }
+  }
+}

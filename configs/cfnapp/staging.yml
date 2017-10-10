@@ -1,0 +1,33 @@
+env:
+  name: cfnapp
+  tier: staging
+
+vpc:
+  cidr: 172.16.0.0/16
+
+  subnet:
+    public:
+      - cidr: 172.16.0.0/20
+        zone: a
+      - cidr: 172.16.16.0/20
+        zone: b
+    private:
+      - cidr: 172.16.128.0/20
+        zone: a
+      - cidr: 172.16.144.0/20
+        zone: b
+
+rds:
+  multi_az: false
+  db_instance_class: db.t2.micro
+  storage_type: gp2
+  allocated_storage: 5
+  monitoring_interval: 60
+  # password: 286755fad04869ca523320acce0dc6a4
+
+ec2:
+  jump:
+    ami: ami-8eeac9eb
+    instance_type: t2.micro
+    key_name: ec2-us-east-2
+    monitoring: true
